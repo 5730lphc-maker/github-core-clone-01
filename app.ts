@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { ApiError, Store, type Json } from './store.ts';
 import { rest } from './rest.ts';
+import { gitHttp } from './git.ts';
 
 export function sendJson(res: ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}): void {
   const data = status === 204 ? '' : JSON.stringify(body);
@@ -28,6 +29,10 @@ export function createApp() {
         sendJson(res, 401, { message: 'Bad credentials' }); return;
       }
       store.origin = `http://${req.headers.host || 'entry'}`;
+      if (/\.git\//.test(path)) {
+        const raw = method === 'POST' ? await readBody(req) : Buffer.alloc(0);
+        if (gitHttp(store, req, res, url, raw)) return;
+      }
       let body: Json = {};
       if (method !== 'GET' && method !== 'HEAD') {
         const raw = await readBody(req);
