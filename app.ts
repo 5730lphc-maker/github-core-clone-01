@@ -2,6 +2,8 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { ApiError, Store, type Json } from './store.ts';
 import { rest } from './rest.ts';
 import { gitHttp } from './git.ts';
+import { graphql } from './graphql.ts';
+import { mcp, rpcError } from './mcp.ts';
 
 export function sendJson(res: ServerResponse, status: number, body: unknown, headers: Record<string, string> = {}): void {
   const data = status === 204 ? '' : JSON.stringify(body);
@@ -38,12 +40,21 @@ export function createApp() {
         const raw = await readBody(req);
         if (raw.length) {
           try { body = JSON.parse(raw.toString()); }
-          catch { throw new ApiError(400, 'Invalid JSON'); }
+          catch {
+            if (path === '/mcp') { sendJson(res, 400, rpcError(null, -32700, 'Parse error')); return; }
+            throw new ApiError(400, 'Invalid JSON');
+          }
         }
       }
       if (path === '/api/v3' || path.startsWith('/api/v3/')) {
         const result = rest(store, method, path.slice(7) || '/', url, body);
         sendJson(res, result.status, result.body, result.headers); return;
+      }
+      if (method === 'POST' && path === '/api/graphql') { sendJson(res, 200, graphql(store, body)); return; }
+      if (path === '/mcp') {
+        if (method === 'POST') { const result = mcp(store, body); sendJson(res, result.status, result.body); return; }
+        if (method === 'DELETE') { sendJson(res, 204, null); return; }
+        throw new ApiError(405, 'Method Not Allowed');
       }
       throw new ApiError(404, 'Not Found');
     } catch (err) {
