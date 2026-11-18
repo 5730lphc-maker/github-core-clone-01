@@ -1,4 +1,4 @@
-import { Objects, ZERO } from './objects.ts';
+import { Objects } from './objects.ts';
 
 export type Json = Record<string, any>;
 export class ApiError extends Error {

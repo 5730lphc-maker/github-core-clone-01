@@ -1,14 +1,17 @@
 {
-  "name": "github-core-clone-01-starter",
-  "version": "0.0.0",
+  "name": "standalone-git-forge",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A minimal GitHub-compatible forge: the lifecycle and two answers, ready to grow into the contest's surface",
+  "description": "Dependency-free Git smart HTTP, GitHub REST and GraphQL, and MCP forge",
   "license": "MIT",
   "engines": {
     "node": ">=22.18"
   },
   "scripts": {
-    "start": "node --experimental-strip-types main.ts"
+    "start": "node main.ts",
+    "test": "node test/local.ts",
+    "test:perf": "node test/local.ts --perf",
+    "test:lifecycle": "node test/lifecycle.ts"
   }
 }

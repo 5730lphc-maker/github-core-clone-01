@@ -38,6 +38,7 @@ export function createApp() {
       let body: Json = {};
       if (method !== 'GET' && method !== 'HEAD') {
         const raw = await readBody(req);
+        if (!raw.length && path === '/mcp') { sendJson(res, 400, rpcError(null, -32700, 'Parse error')); return; }
         if (raw.length) {
           try { body = JSON.parse(raw.toString()); }
           catch {
@@ -47,6 +48,7 @@ export function createApp() {
         }
       }
       if (path === '/api/v3' || path.startsWith('/api/v3/')) {
+        if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError(400, 'JSON body must be an object');
         const result = rest(store, method, path.slice(7) || '/', url, body);
         sendJson(res, result.status, result.body, result.headers); return;
       }
@@ -58,8 +60,8 @@ export function createApp() {
       }
       throw new ApiError(404, 'Not Found');
     } catch (err) {
-      if (!(err instanceof ApiError)) process.stderr.write(`[request] ${err instanceof Error ? err.stack : err}\n`);
-      if (!res.headersSent) sendJson(res, err instanceof ApiError ? err.status : 500, { message: err instanceof ApiError ? err.message : 'Internal Server Error' });
+      if (!(err instanceof ApiError) && !(err instanceof URIError)) process.stderr.write(`[request] ${err instanceof Error ? err.stack : err}\n`);
+      if (!res.headersSent) sendJson(res, err instanceof ApiError ? err.status : err instanceof URIError ? 400 : 500, { message: err instanceof ApiError ? err.message : err instanceof URIError ? 'Invalid URL encoding' : 'Internal Server Error' });
       else res.end();
     }
   });

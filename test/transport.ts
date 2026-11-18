@@ -47,5 +47,5 @@ export function installTransport(server: Server) {
     });
   };
   globalThis.fetch = fetchLocal;
-  return { agent, close() { agent.destroy(); server.close(); } };
+  return { agent, fetch: fetchLocal, close() { agent.destroy(); server.close(); } };
 }

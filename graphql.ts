@@ -1,4 +1,4 @@
-import { Store, ApiError, type Json, type Repository } from './store.ts';
+import { Store, type Json, type Repository } from './store.ts';
 
 interface Field { name: string; alias: string; args: Json; children: Field[]; condition?: string; directives: { name: string; args: Json }[] }
 interface Operation { kind: string; name: string; fields: Field[]; defaults: Json }

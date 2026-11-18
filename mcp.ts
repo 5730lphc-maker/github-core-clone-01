@@ -1,4 +1,4 @@
-import { ApiError, Store, type Json } from './store.ts';
+import { Store, type Json } from './store.ts';
 
 const string = { type: 'string' };
 function tool(name: string, description: string, properties: Json, required: string[]) {
